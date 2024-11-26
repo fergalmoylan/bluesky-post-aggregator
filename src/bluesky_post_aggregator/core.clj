@@ -20,4 +20,6 @@
                                              :replication-factor (env :output-topic-replication-factor)
                                              :key-serde (jsonserde/serde)
                                              :value-serde (jsonserde/serde)}}}]
-    (log/info "Starting application with config:\n" (with-out-str (pprint app-config)))))
+    (log/info "Starting application with config:\n"
+              (with-out-str
+                (pprint app-config)))))

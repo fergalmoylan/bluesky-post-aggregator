@@ -1,0 +1,18 @@
+name: Lint Clojure
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  clj-kondo:
+    name: runner / clj-kondo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.0.2
+      - name: clj-kondo
+        uses: nnichols/clojure-lint-action@v2
+        with:
+          toolchain: stable
