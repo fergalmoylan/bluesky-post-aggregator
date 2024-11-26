@@ -109,7 +109,7 @@
                           "-aggregate-store")
          :key-serde   (ednserde/serde)
          :value-serde (ednserde/serde)})
-      #_(js/suppress {:max-records 1000
+      (js/suppress {:max-records 1000
                     :max-bytes (* 1024 1024)
                     :until-time-limit-ms 120000})
       (js/to-kstream)
