@@ -4,7 +4,8 @@
             [jackdaw.streams :as js]
             [clojure.tools.logging :as log]
             [bluesky-post-aggregator.topology :refer [topology-builder]]
-            [clojure.pprint :refer [pprint]]))
+            [clojure.pprint :refer [pprint]])
+  (:gen-class))
 
 (defn -main
   [& args]

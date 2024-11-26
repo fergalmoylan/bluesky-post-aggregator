@@ -56,7 +56,6 @@
 (defn format-record-for-opensearch
   [windowed-key
    aggregated-value
-   cluster-key
    output-keyname
    aggregation-fields]
   (let [main-key (.key windowed-key)
@@ -72,7 +71,7 @@
                         5)))
                   {:count (:count aggregated-value)
                    :timestamp (.start (.window windowed-key))
-                   :index-name (str (name cluster-key) "-clusters-"
+                   :index-name (str (name output-keyname) "-clusters-"
                                     (.format
                                       (LocalDate/now)
                                       (DateTimeFormatter/ofPattern "yyyy-MM-dd")))
@@ -117,10 +116,9 @@
         (fn [[windowed-key aggregated-value]]
           (format-record-for-opensearch windowed-key
                                         aggregated-value
-                                        cluster-key
                                         output-keyname
                                         aggregation-fields)))
-      (js/peek (fn [stream] (println stream)))
+      ;(js/peek (fn [stream] (println stream)))
       (js/to output-topic)))
 
 (defn topology-builder
