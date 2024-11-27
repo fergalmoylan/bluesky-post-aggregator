@@ -9,17 +9,19 @@
 
 (defn -main
   [& args]
-  (let [app-config {"bootstrap.servers" (env :kafka-addresses)
-                    "application.id" (env :application-id)
+  (let [app-config {"bootstrap.servers" "0.0.0.0:29092"
+                    "application.id" "test"
                     "auto.offset.reset" "earliest"
                     "cache.max.bytes.buffering" "100000"
-                    "topic-config" {:input {:topic-name (env :input-topic)
-                                            :partition-count (env :input-topic-partitions)
+                    "num.stream.threads" 8
+                    "commit.interval.ms" 1000
+                    "topic-config" {:input {:topic-name "bluesky_input_stream"
+                                            :partition-count 8
                                             :replication-factor 1
                                             :key-serde (jsonserde/serde)
                                             :value-serde (jsonserde/serde)}
-                                    :output {:topic-name (env :output-topic)
-                                             :partition-count (env :output-topic-partitions)
+                                    :output {:topic-name "bluesky_aggregator_output"
+                                             :partition-count 8
                                              :replication-factor 1
                                              :key-serde (jsonserde/serde)
                                              :value-serde (jsonserde/serde)}}}

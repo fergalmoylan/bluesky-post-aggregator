@@ -86,8 +86,14 @@
    aggregation-fields]
   (-> input-stream
       (js/filter
-        (fn [[_ v]]
-            (seq (cluster-key v))))
+        (-> input-stream
+            (js/flat-map
+              (fn [[_ v]]
+                (if (empty? (:your-list-field v))
+                  []
+                  (for [item (:your-list-field v)]
+                    [item v]))))
+            ...))
       (split-record-by-value cluster-key aggregation-fields)
       (js/group-by-key
         {:key-serde   (ednserde/serde)
@@ -108,9 +114,12 @@
                           "-aggregate-store")
          :key-serde   (ednserde/serde)
          :value-serde (ednserde/serde)})
+      (js/filter
+        (fn [[_ v]]
+          (< 1 (:count v))))
       (js/suppress {:max-records 1000
                     :max-bytes (* 1024 1024)
-                    :until-time-limit-ms 120000})
+                    :until-time-limit-ms 60000})
       (js/to-kstream)
       (js/map
         (fn [[windowed-key aggregated-value]]
