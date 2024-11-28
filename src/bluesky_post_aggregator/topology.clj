@@ -1,9 +1,21 @@
 (ns bluesky-post-aggregator.topology
-  (:require [jackdaw.streams :as js]
+  (:require [clojure.tools.logging :as log]
+            [jackdaw.streams :as js]
             [jackdaw.serdes.edn :as ednserde])
   (:import (java.time Duration LocalDate)
            (java.time.format DateTimeFormatter)
            (org.apache.kafka.streams.kstream TimeWindows)))
+
+(defn update-top-k [top-k-map key count k]
+  (let [updated-map (update top-k-map key (fnil + 0) count)
+        sorted-entries (sort-by val > updated-map)]
+    (into {} (take k sorted-entries))))
+
+(defn top-k-aggregator [agg-val new-val k]
+  (reduce (fn [acc key]
+            (update-top-k acc key 1 k))
+          agg-val
+          new-val))
 
 (defn get-most-frequent-occurrences
   [frequency-map
@@ -42,11 +54,9 @@
           (fn [updated agg-key]
             (assoc updated
               agg-key
-              (reduce
-                (fn [counts value]
-                  (update counts value (fnil inc 0)))
-                (agg-key aggregated-record)
-                (agg-key (second new-record)))))
+              (top-k-aggregator (agg-key aggregated-record)
+                                (agg-key (second new-record))
+                                10)))
           {:count (:count aggregated-record)}
           aggregation-fields)]
     (update updated-aggregation-fields
@@ -86,14 +96,8 @@
    aggregation-fields]
   (-> input-stream
       (js/filter
-        (-> input-stream
-            (js/flat-map
-              (fn [[_ v]]
-                (if (empty? (:your-list-field v))
-                  []
-                  (for [item (:your-list-field v)]
-                    [item v]))))
-            ...))
+        (fn [[_ v]]
+            (seq (cluster-key v))))
       (split-record-by-value cluster-key aggregation-fields)
       (js/group-by-key
         {:key-serde   (ednserde/serde)
@@ -116,7 +120,7 @@
          :value-serde (ednserde/serde)})
       (js/filter
         (fn [[_ v]]
-          (< 1 (:count v))))
+          (< 2 (:count v))))
       (js/suppress {:max-records 1000
                     :max-bytes (* 1024 1024)
                     :until-time-limit-ms 60000})
