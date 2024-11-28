@@ -1,6 +1,5 @@
 (ns bluesky-post-aggregator.topology
-  (:require [clojure.tools.logging :as log]
-            [jackdaw.streams :as js]
+  (:require [jackdaw.streams :as js]
             [jackdaw.serdes.edn :as ednserde])
   (:import (java.time Duration LocalDate)
            (java.time.format DateTimeFormatter)
@@ -93,7 +92,8 @@
    output-topic
    cluster-key
    output-keyname
-   aggregation-fields]
+   aggregation-fields
+   min-count-threshold]
   (-> input-stream
       (js/filter
         (fn [[_ v]]
@@ -120,7 +120,8 @@
          :value-serde (ednserde/serde)})
       (js/filter
         (fn [[_ v]]
-          (< 2 (:count v))))
+          (< min-count-threshold
+             (:count v))))
       (js/suppress {:max-records 1000
                     :max-bytes (* 1024 1024)
                     :until-time-limit-ms 60000})
@@ -145,17 +146,26 @@
                                output_topic
                                :languages
                                :language
-                               [:hashtags :hostnames])
+                               [:hashtags :hostnames]
+                               2)
     (record-aggregation-stream input-stream
                                output_topic
                                :hashtags
                                :hashtag
-                               [:languages :hostnames])
+                               [:languages :hostnames]
+                               5)
     (record-aggregation-stream input-stream
                                output_topic
                                :hostnames
                                :hostname
-                               [:hashtags :languages]))
+                               [:hashtags :languages]
+                               2)
+    (record-aggregation-stream input-stream
+                               output_topic
+                               :urls
+                               :url
+                               []
+                               0))
   builder)
 
 
