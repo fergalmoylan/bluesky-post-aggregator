@@ -13,6 +13,8 @@
                     "application.id" (env :application-id)
                     "auto.offset.reset" "earliest"
                     "cache.max.bytes.buffering" "100000"
+                    "num.stream.threads" (int 8)
+                    "commit.interval.ms" 1000
                     "topic-config" {:input {:topic-name (env :input-topic)
                                             :partition-count (env :input-topic-partitions)
                                             :replication-factor 1
