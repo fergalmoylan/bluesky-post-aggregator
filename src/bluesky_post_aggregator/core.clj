@@ -24,7 +24,12 @@
                                              :partition-count (env :output-topic-partitions)
                                              :replication-factor 1
                                              :key-serde (jsonserde/serde)
-                                             :value-serde (jsonserde/serde)}}}
+                                             :value-serde (jsonserde/serde)}
+                                    :enriched {:topic-name (env :enriched-topic)
+                                               :partition-count (env :enriched-topic-partitions)
+                                               :replication-factor 1
+                                               :key-serde (jsonserde/serde)
+                                               :value-serde (jsonserde/serde)}}}
         streams-builder (js/streams-builder)
         topology (topology-builder streams-builder app-config)
         app (js/kafka-streams topology app-config)]

@@ -141,7 +141,9 @@
   (let [topic-config (get app-config "topic-config")
         input-topic (:input topic-config)
         output_topic (:output topic-config)
-        input-stream (js/kstream builder input-topic)]
+        enriched-topic (:enriched topic-config)
+        input-stream (js/kstream builder input-topic)
+        enriched-stream (js/kstream builder enriched-topic)]
     (record-aggregation-stream input-stream
                                output_topic
                                :languages
@@ -165,7 +167,17 @@
                                :urls
                                :url
                                []
-                               0))
+                               0)
+    (record-aggregation-stream enriched-stream
+                               output_topic
+                               :sentiment
+                               :sentiment
+                               [:hashtags :keywords]
+                               0)
+    (record-aggregation-stream enriched-stream
+                               output_topic
+                               :keywords
+                               :keyword
+                               [:hashtags :languages :sentiment]
+                               4))
   builder)
-
-
